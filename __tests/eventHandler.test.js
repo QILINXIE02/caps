@@ -1,11 +1,14 @@
 'use strict';
 const uuid = require('uuid').v4;
 const faker = require('faker');
-const event = require('../events');
-require('../driver');
-require('../vendor');
+const event = require('../src/events');
+
+require('../src/driver');
+require('../src/vendor');
+
 setTimeout=jest.fn();
 describe('event handler tests', () => {
+
     let consoleSpy;
     beforeEach(()=>{
         consoleSpy = jest.spyOn(console,'log').mockImplementation();
@@ -24,11 +27,12 @@ describe('event handler tests', () => {
         expect(setTimeout).toHaveBeenCalled();
     })
     test('delivered handler test',() => {
-        event.emit('dileverd',order)
+        event.emit('delivered',order)
         expect(consoleSpy).toHaveBeenCalled();
     })
     test('in-transit handler test',() => {
         event.emit('in-transit',order)
         expect(setTimeout).toHaveBeenCalled();
     })
+    
 })

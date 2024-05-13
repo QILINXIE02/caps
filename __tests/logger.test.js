@@ -1,12 +1,16 @@
 'use strict';
 const uuid = require('uuid').v4;
 const faker = require('faker');
-const event = require('../events');
+const event = require('../src/events');
+
 let store = (process.env.STORE||'INDEX');
-require('../driver');
-require('../vendor');
-require('../logger');
+
+require('../src/driver');
+require('../src/vendor');
+require('../src/logger');
+
 describe('event handler tests', () => {
+    
     beforeEach(()=>{
         jest.useFakeTimers();
         jest.spyOn(global.console,'log');
@@ -31,4 +35,5 @@ describe('event handler tests', () => {
         jest.runAllTimers();
         expect(console.log).toHaveBeenCalled();
     })
+    
 })

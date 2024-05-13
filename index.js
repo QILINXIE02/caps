@@ -1,7 +1,6 @@
-'use stick';
+'use strict';
 
-const event=require ('./events');
-
-require('./logger')
-require('./vendor')
-require('./driver')
+const event = require('./src/events');
+require('./src/logger');
+require('./src/vendor');
+require('./src/driver');
