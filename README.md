@@ -16,6 +16,9 @@ The intent here is to build the data services that would drive a suite of applic
 
 UML diagram: ![alt text](image-1.png)
 
+node src/socketServer.js: ![alt text](image-2.png)
+node src/driver.js: ![alt text](image-4.png)
+node src/vendor.js: ![alt text](image-3.png)
 
 ====================
 
