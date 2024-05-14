@@ -1,21 +1,20 @@
 {
   "name": "caps",
   "version": "1.0.0",
-  "description": "CAPS Phase 1: Begin the build of an application for a product called CAPS - The Code Academy Parcel Service.",
+  "description": "Phase 2: Socket.io.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --verbose --coverage"
+    "test": "jest"
   },
   "author": "Qilin Xie",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^10.0.0",
-    "faker": "^5.5.3",
     "socket.io": "^4.7.5",
-    "uuid": "^8.3.2"
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
     "jest": "^29.7.0"
-  }
+  },
+  "keywords": []
 }

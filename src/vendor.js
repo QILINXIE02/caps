@@ -1,12 +1,10 @@
-'use strict';
-
-const io = require('./socketServer');
-const faker = require('faker');
-const { v4: uuid } = require('uuid');
+const io = require('socket.io-client');
 
 require('dotenv').config();
 
-io.on('connect', (socket) => {
+const socket = io.connect('http://localhost:3000/caps');
+
+socket.on('connect', () => {
     console.log(`Vendor connected: ${socket.id}`);
     const interval = setInterval(() => {
         const order = {

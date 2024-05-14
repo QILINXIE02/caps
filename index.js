@@ -1,16 +1,53 @@
 'use strict';
 
-const http = require('http');
-const io = require('./src/socketServer'); // Import your Socket.io server instance
+const server = require('./src/socketServer');
 const PORT = process.env.PORT || 3000;
 
-// Create an HTTP server
-const server = http.createServer();
-
-// Attach the Socket.io server to the HTTP server
-io.attach(server);
-
-// Start listening on the designated port
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    // console.log(`CAPS Server running on port ${PORT}`);
 });
+
+
+// const { Server } = require('socket.io');
+// const http = require('http');
+// const events = require('./src/events');
+// const logger = require('./src/logger');
+
+// module.exports = function initializeSocketServer(io) {
+//     const server = http.createServer();
+//     io.attach(server); // Attach Socket.io server to HTTP server
+
+//     io.on('connection', (socket) => {
+//         console.log(`Client connected: ${socket.id}`);
+        
+//         // Listen for 'pickup' event from vendors
+//         socket.on('pickup', (order) => {
+//             // Emit 'pickup' event to all sockets except the sender
+//             socket.broadcast.emit('pickup', order);
+//             // Log the event
+//             logger('pickup', order);
+//         });
+
+//         // Listen for 'in-transit' event from drivers
+//         socket.on('in-transit', (order) => {
+//             // Log the event
+//             logger('in-transit', order);
+//         });
+
+//         // Listen for 'delivered' event from drivers
+//         socket.on('delivered', (order) => {
+//             // Emit 'delivered' event to appropriate room
+//             io.to(order.storeName).emit('delivered', order);
+//             // Log the event
+//             logger('delivered', order);
+//         });
+
+//         // Handle client disconnect
+//         socket.on('disconnect', () => {
+//             console.log(`Client disconnected: ${socket.id}`);
+//         });
+//     });
+
+//     return server;
+// };
+
