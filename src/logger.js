@@ -1,7 +1,17 @@
-'use strict';
+const fs = require('fs');
 
-const logIt = (event, order) => {
-    console.log('EVENT:', { event, time: new Date().toLocaleString(), order });
-};
+const logFile = 'caps.log';
 
-module.exports = logIt;
+function log(eventType, order) {
+    const timestamp = new Date().toISOString();
+    const message = `[${timestamp}] ${eventType}: ${JSON.stringify(order)}`;
+
+    // Append the message to the log file
+    fs.appendFile(logFile, message + '\n', (err) => {
+        if (err) {
+            console.error('Error writing to log file:', err);
+        }
+    });
+}
+
+module.exports = log;
