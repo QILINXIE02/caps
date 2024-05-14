@@ -1,39 +1,28 @@
 'use strict';
-const uuid = require('uuid').v4;
-const faker = require('faker');
+
 const event = require('../src/events');
+const logger = require('../src/logger');
 
-let store = (process.env.STORE||'INDEX');
+jest.spyOn(console, 'log');
 
-require('../src/driver');
-require('../src/vendor');
-require('../src/logger');
+describe('Logger Tests', () => {
+  let order;
 
-describe('event handler tests', () => {
+  beforeEach(() => {
+    order = {
+      orderId: '123',
+      storeName: 'INDEX', // Mocked store name for testing
+      customerName: 'John Doe',
+      address: '123 Main St',
+    };
+  });
+
+  test('logIt function should log event with expected arguments', () => {
+    logger.logIt('pickup', order);
     
-    beforeEach(()=>{
-        jest.useFakeTimers();
-        jest.spyOn(global.console,'log');
-      })
-    let order = {
-        orderId: uuid(),
-        storeName: process.env.STORE,
-        customerName: faker.name.findName(),
-        address:faker.address.streetAddress(),
-    }
-    test('pick up handler test',() => {
-        event.emit('pickup',order)
-        jest.runAllTimers();
-        expect(console.log).toHaveBeenCalled();
-    })
-    test('delivered handler test',() => {
-        event.emit('delivered',order)
-        expect(console.log).toHaveBeenCalled();
-    })
-    test('in-transit handler test',() => {
-        event.emit('in-transit',order)
-        jest.runAllTimers();
-        expect(console.log).toHaveBeenCalled();
-    })
-    
-})
+    expect(console.log).toHaveBeenCalledWith(
+      'EVENT:',
+      expect.objectContaining({ event: 'pickup', order })
+    );
+  });
+});

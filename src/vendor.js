@@ -1,25 +1,29 @@
 'use strict';
 
-const event = require('./events');
+const io = require('./socketServer');
 const faker = require('faker');
 const { v4: uuid } = require('uuid');
 
 require('dotenv').config();
 
-function simulateOrder() {
-    const order = {
-        orderId: uuid(),
-        storeName: process.env.STORE,
-        customerName: faker.name.findName(),
-        address: faker.address.streetAddress(),
-    };
-    event.emit('pickup', order);
-}
+io.on('connect', (socket) => {
+    console.log(`Vendor connected: ${socket.id}`);
+    const interval = setInterval(() => {
+        const order = {
+            orderId: uuid(),
+            storeName: process.env.STORE,
+            customerName: faker.name.findName(),
+            address: faker.address.streetAddress(),
+        };
+        socket.emit('pickup', order);
+    }, 5000);
 
-const interval = setInterval(simulateOrder, 5000);
+    socket.on('delivered', (order) => {
+        console.log(`VENDOR: Thank you for delivering ${order.orderId}`);
+    });
 
-function deliverHandler(order) {
-    console.log(`VENDOR: Thank you for delivering ${order.orderId}`);
-}
-
-event.on('delivered', deliverHandler);
+    socket.on('disconnect', () => {
+        clearInterval(interval);
+        console.log(`Vendor disconnected: ${socket.id}`);
+    });
+});
