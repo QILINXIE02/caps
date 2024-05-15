@@ -1,91 +1,78 @@
 const { Server } = require('socket.io');
-
-require("dotenv").config();
+const chance = require('chance'); 
+const PORT = process.env.PORT || 3000;
 
 const server = new Server();
 const caps = server.of("/caps");
-const PORT=process.env.PORT || 3002;
+
+const driverQueue = {};
+const vendorQueue = {}; 
+
+const c = new chance(); 
 
 caps.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.id}`);
-    
-    // Listen for 'pickup' event from vendors
-    socket.on('pickup', (order) => {
-        // Emit 'pickup' event to all sockets except the sender
-        socket.broadcast.emit('pickup', order);
-        // Log the event
-        console.log(`pickup: ${JSON.stringify(order)}`);
-    });
+  console.log(`Client connected: ${socket.id}`);
 
-    // Listen for 'in-transit' event from drivers
-    socket.on('in-transit', (order) => {
-        // Log the event
-        console.log(`in-transit: ${JSON.stringify(order)}`);
-    });
+  const connectedClients = new Set();
+  connectedClients.add(socket.id);
 
-    // Listen for 'delivered' event from drivers
-    socket.on('delivered', (order) => {
-        // Log the event
-        console.log(`delivered: ${JSON.stringify(order)}`);
-    });
+  const removeDisconnectedClient = () => {
+    connectedClients.delete(socket.id);
+  };
 
-    // Handle client disconnect
-    socket.on('disconnect', () => {
-        console.log(`Client disconnected: ${socket.id}`);
-    });
+  socket.on('disconnect', () => {
+    console.log(`Client disconnected: ${socket.id}`);
+    removeDisconnectedClient(); 
+
+  });
+
+  socket.on('subscribe', (data) => {
+    const { queue, vendorName } = data;
+    if (queue === 'pickup' && !driverQueue[vendorName]) {
+      driverQueue[vendorName] = [];
+    } else if (queue === 'delivered' && !vendorQueue[vendorName]) {
+      vendorQueue[vendorName] = [];
+    }
+  });
+
+  socket.on('pickup', (order) => {
+    const vendorName = order.storeName;
+    if (driverQueue[vendorName]) {
+      driverQueue[vendorName].push(order);
+    }
+    socket.broadcast.emit('pickup', order);
+  });
+
+  socket.on('delivered', (order) => {
+    const vendorName = order.storeName;
+    if (vendorQueue[vendorName]) {
+      vendorQueue[vendorName].push(order);
+    }
+    socket.broadcast.emit('delivered', order);
+  });
+
+  socket.on('in-transit', (order) => {
+    console.log(`in-transit: ${JSON.stringify(order)}`);
+  });
+
+  socket.on('getAll', (data) => {
+    const { queue } = data;
+    const messages = queue === 'pickup' ? driverQueue[socket.id] || [] : vendorQueue[socket.id] || [];
+    socket.emit('getAll', { messages });
+  });
+
+  socket.on('received', (data) => {
+    const messageId = data.messageId;
+    const queueName = messageId.startsWith('pickup') ? 'pickup' : 'delivered'; // Assuming message ID format indicates queue
+    const messageIndex = (queue === 'pickup' ? driverQueue[socket.id] : vendorQueue[socket.id]).findIndex((msg) => msg.id === messageId);
+    if (messageIndex !== -1) {
+      (queue === 'pickup' ? driverQueue[socket.id] : vendorQueue[socket.id]).splice(messageIndex, 1);
+    }
+  });
 });
 
 caps.on('listening', () => {
-    console.log(`Socket.io server running on port ${PORT}`);
+  console.log(`Socket.io server running on port ${PORT}`);
 });
 
 server.listen(PORT);
-
-// const { Server } = require('socket.io');
-// const http = require('http');
-// // const events = require('./events');
-// const logger = require('./logger'); 
-
-// const server = http.createServer();
-// const io = new Server(server, {
-//     path: '/caps',
-//     cors: {
-//         origin: '*',
-//     },
-// });
-
-// io.on('connection', (socket) => {
-//     console.log(`Client connected: ${socket.id}`);
-    
-//     // Listen for 'pickup' event from vendors
-//     socket.on('pickup', (order) => {
-//         // Emit 'pickup' event to all sockets except the sender
-//         socket.broadcast.emit('pickup', order);
-//         // Log the event
-//         logger('pickup', order);
-//     });
-
-//     // Listen for 'in-transit' event from drivers
-//     socket.on('in-transit', (order) => {
-//         // Log the event
-//         logger('in-transit', order);
-//     });
-
-//     // Listen for 'delivered' event from drivers
-//     socket.on('delivered', (order) => {
-//         // Log the event
-//         logger('delivered', order);
-//     });
-
-//     // Handle client disconnect
-//     socket.on('disconnect', () => {
-//         console.log(`Client disconnected: ${socket.id}`);
-//     });
-// });
-
-// // Log server start
-// server.on('listening', () => {
-//     console.log(`Socket.io server running on port ${server.address().port}`);
-// });
-
-// module.exports = server;

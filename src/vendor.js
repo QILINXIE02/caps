@@ -1,20 +1,26 @@
 const io = require('socket.io-client');
-
 require('dotenv').config();
+const chance = require('chance');
 
-const socket = io.connect('http://localhost:3000/caps');
+const socket = io.connect(`http://localhost:${process.env.PORT}/caps`);
+
+const c = new chance();
 
 socket.on('connect', () => {
   console.log(`Vendor connected: ${socket.id}`);
+
+  const vendorName = process.env.STORE || c.name(); 
+  socket.emit('subscribe', { queue: 'delivered', vendorName });
+
   const interval = setInterval(() => {
     const order = {
-      orderId: Math.floor(Math.random() * 100000) + 1, 
-      storeName: process.env.STORE,
-      customerName: "Sample Customer", 
-      address: "Sample Address", 
+      orderId: c.integer({ min: 100000, max: 999999 }), 
+      storeName: vendorName,
+      customerName: c.name(),
+      address: `${c.address()} ${c.city()}`,
     };
     socket.emit('pickup', order);
-  }, 5000);
+  }, 1000);
 
   socket.on('delivered', (order) => {
     console.log(`VENDOR: Thank you for delivering ${order.orderId}`);
